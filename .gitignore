@@ -1,0 +1,42 @@
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+*.pprof
+*.cover
+coverage*
+*.keep
+# Go workspace/cache
+bin/
+dist/
+vendor/
+.cache/
+
+# Logs
+*.log
+
+# Environment / secrets
+.env
+.env.*
+*.local.yaml
+configs/*.local.yaml
+configs/local.yaml
+configs/docker.yaml
+
+# Cursor / VS Code / JetBrains
+.cursor/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+**/.dockerignore
+
