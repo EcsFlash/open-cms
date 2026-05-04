@@ -18,6 +18,8 @@ type IVideoRepo interface {
 	Create(v *models.Video) error
 	GetByID(id uint) (*models.Video, error)
 	ListAll() ([]models.Video, error)
+	UpdateName(id uint, name string) error
+	Delete(id uint) error
 }
 
 func (r *VideoRepo) Create(v *models.Video) error {
@@ -38,5 +40,13 @@ func (r *VideoRepo) ListAll() ([]models.Video, error) {
 		return nil, err
 	}
 	return res, nil
+}
+
+func (r *VideoRepo) UpdateName(id uint, name string) error {
+	return r.db.Model(&models.Video{}).Where("id = ?", id).Update("name", name).Error
+}
+
+func (r *VideoRepo) Delete(id uint) error {
+	return r.db.Delete(&models.Video{}, id).Error
 }
 

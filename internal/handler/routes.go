@@ -59,5 +59,17 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, uc usecase.IUseCase, log s
 	v1.GET("/videos/:id", h.GetVideo)
 	mod.POST("/media/images", h.UploadImage)
 	mod.POST("/media/videos", h.UploadVideo)
+	mod.PATCH("/images/:id", h.PatchImage)
+	admin.DELETE("/images/:id", h.DeleteImageHandler)
+	mod.PATCH("/videos/:id", h.PatchVideo)
+	admin.DELETE("/videos/:id", h.DeleteVideoHandler)
+
+	// Theme
+	v1.GET("/theme", h.GetTheme)
+	admin.PATCH("/theme", h.UpdateTheme)
+
+	// Settings
+	v1.GET("/settings", h.GetSettings)
+	admin.PATCH("/settings", h.UpdateSettings)
 }
 

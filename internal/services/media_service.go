@@ -39,6 +39,11 @@ type IMediaService interface {
 	GetVideoByID(id uint) (*models.Video, error)
 	ListImages() ([]models.Image, error)
 	ListVideos() ([]models.Video, error)
+
+	RenameImage(id uint, name string) error
+	DeleteImage(ctx context.Context, id uint) error
+	RenameVideo(id uint, name string) error
+	DeleteVideo(ctx context.Context, id uint) error
 }
 
 func NewMediaService(cfg *config.Config, minioCli *minio.Client, images repos.IImageRepo, videos repos.IVideoRepo) *MediaService {
@@ -203,6 +208,40 @@ func (s *MediaService) GetImageByID(id uint) (*models.Image, error) { return s.i
 func (s *MediaService) GetVideoByID(id uint) (*models.Video, error) { return s.videos.GetByID(id) }
 func (s *MediaService) ListImages() ([]models.Image, error)         { return s.images.ListAll() }
 func (s *MediaService) ListVideos() ([]models.Video, error)         { return s.videos.ListAll() }
+
+func (s *MediaService) RenameImage(id uint, name string) error {
+	return s.images.UpdateName(id, name)
+}
+
+func (s *MediaService) DeleteImage(ctx context.Context, id uint) error {
+	img, err := s.images.GetByID(id)
+	if err != nil {
+		return err
+	}
+	for _, key := range []string{
+		img.ObjectKeyOriginal,
+		img.ObjectKeyLarge,
+		img.ObjectKeyMedium,
+		img.ObjectKeyMini,
+		img.ObjectKeyThumbnail,
+	} {
+		_ = s.minio.RemoveObject(ctx, img.Bucket, key, minio.RemoveObjectOptions{})
+	}
+	return s.images.Delete(id)
+}
+
+func (s *MediaService) RenameVideo(id uint, name string) error {
+	return s.videos.UpdateName(id, name)
+}
+
+func (s *MediaService) DeleteVideo(ctx context.Context, id uint) error {
+	v, err := s.videos.GetByID(id)
+	if err != nil {
+		return err
+	}
+	_ = s.minio.RemoveObject(ctx, v.Bucket, v.ObjectKey, minio.RemoveObjectOptions{})
+	return s.videos.Delete(id)
+}
 
 func readAll(r multipart.File, max int64) ([]byte, error) {
 	lr := io.LimitReader(r, max+1)

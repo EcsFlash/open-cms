@@ -31,7 +31,7 @@ func (r *NewsRepo) Update(n *models.News) error {
 		"title":            n.Title,
 		"preview_image_id": n.PreviewImageID,
 		"short":            n.Short,
-		"content_markdown": n.Content,
+		"content": n.Content,
 	}).Error
 }
 

@@ -44,6 +44,8 @@ func main() {
 		&models.Video{},
 		&models.News{},
 		&models.User{},
+		&models.Theme{},
+		&models.Settings{},
 	); err != nil {
 		log.Error("db migrate failed", sl.Err(err))
 		return
@@ -78,7 +80,13 @@ func main() {
 
 	mediaSvc := services.NewMediaService(cfg, minioCli, imageRepo, videoRepo)
 
-	uc := usecase.NewUseCase(sectionSvc, articleSvc, newsSvc, authSvc, mediaSvc)
+	themeRepo := repos.NewThemeRepo(gdb)
+	themeSvc := services.NewThemeService(themeRepo)
+
+	settingsRepo := repos.NewSettingsRepo(gdb)
+	settingsSvc := services.NewSettingsService(settingsRepo)
+
+	uc := usecase.NewUseCase(sectionSvc, articleSvc, newsSvc, authSvc, mediaSvc, themeSvc, settingsSvc)
 
 	e := echo.New()
 	e.HideBanner = true
