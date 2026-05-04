@@ -1,6 +1,55 @@
 basePath: /
 definitions:
-  headless-cms_internal_models.Article:
+  handler.AuthLoginRequest:
+    properties:
+      nickname:
+        example: alekc
+        type: string
+      password:
+        example: qwerty123
+        type: string
+    type: object
+  handler.AuthLoginResponse:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
+  handler.AuthRegisterRequest:
+    properties:
+      nickname:
+        example: alekc
+        type: string
+      password:
+        example: qwerty123
+        type: string
+    type: object
+  handler.ErrorResponse:
+    properties:
+      error:
+        example: описание ошибки
+        type: string
+    type: object
+  handler.MediaListAllResponse:
+    properties:
+      images:
+        items:
+          $ref: '#/definitions/models.Image'
+        type: array
+      videos:
+        items:
+          $ref: '#/definitions/models.Video'
+        type: array
+    type: object
+  handler.MediaRenameBody:
+    properties:
+      name:
+        example: hero-banner
+        type: string
+    type: object
+  models.Article:
     properties:
       content_markdown:
         type: string
@@ -15,7 +64,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  headless-cms_internal_models.Image:
+  models.Image:
     properties:
       bucket:
         type: string
@@ -45,7 +94,7 @@ definitions:
       width:
         type: integer
     type: object
-  headless-cms_internal_models.News:
+  models.News:
     properties:
       content:
         type: string
@@ -54,7 +103,7 @@ definitions:
       id:
         type: integer
       preview_image:
-        $ref: '#/definitions/headless-cms_internal_models.Image'
+        $ref: '#/definitions/models.Image'
       preview_image_id:
         type: integer
       short:
@@ -64,7 +113,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  headless-cms_internal_models.Role:
+  models.Role:
     enum:
     - user
     - moderator
@@ -74,11 +123,11 @@ definitions:
     - RoleUser
     - RoleModerator
     - RoleAdmin
-  headless-cms_internal_models.Section:
+  models.Section:
     properties:
       children:
         items:
-          $ref: '#/definitions/headless-cms_internal_models.Section'
+          $ref: '#/definitions/models.Section'
         type: array
       created_at:
         type: string
@@ -91,7 +140,71 @@ definitions:
       updated_at:
         type: string
     type: object
-  headless-cms_internal_models.User:
+  models.Settings:
+    properties:
+      banner_image_url:
+        type: string
+      banner_text:
+        type: string
+      created_at:
+        type: string
+      favicon_url:
+        type: string
+      id:
+        type: integer
+      logo_url:
+        type: string
+      meta_description:
+        type: string
+      meta_keywords:
+        type: string
+      meta_title:
+        type: string
+      og_image_url:
+        type: string
+      project_name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.Theme:
+    properties:
+      created_at:
+        type: string
+      dark_bg:
+        type: string
+      dark_border:
+        type: string
+      dark_card:
+        type: string
+      dark_danger:
+        type: string
+      dark_primary:
+        type: string
+      dark_success:
+        type: string
+      dark_text:
+        type: string
+      id:
+        type: integer
+      light_bg:
+        type: string
+      light_border:
+        type: string
+      light_card:
+        type: string
+      light_danger:
+        type: string
+      light_primary:
+        type: string
+      light_success:
+        type: string
+      light_text:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.User:
     properties:
       created_at:
         type: string
@@ -100,11 +213,11 @@ definitions:
       nickname:
         type: string
       role:
-        $ref: '#/definitions/headless-cms_internal_models.Role'
+        $ref: '#/definitions/models.Role'
       updated_at:
         type: string
     type: object
-  headless-cms_internal_models.Video:
+  models.Video:
     properties:
       bucket:
         type: string
@@ -121,54 +234,11 @@ definitions:
       object_key:
         type: string
       thumbnail_image:
-        $ref: '#/definitions/headless-cms_internal_models.Image'
+        $ref: '#/definitions/models.Image'
       thumbnail_image_id:
         type: integer
       updated_at:
         type: string
-    type: object
-  internal_handler.AuthLoginRequest:
-    properties:
-      nickname:
-        example: alekc
-        type: string
-      password:
-        example: qwerty123
-        type: string
-    type: object
-  internal_handler.AuthLoginResponse:
-    properties:
-      token:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        type: string
-      user:
-        $ref: '#/definitions/headless-cms_internal_models.User'
-    type: object
-  internal_handler.AuthRegisterRequest:
-    properties:
-      nickname:
-        example: alekc
-        type: string
-      password:
-        example: qwerty123
-        type: string
-    type: object
-  internal_handler.ErrorResponse:
-    properties:
-      error:
-        example: описание ошибки
-        type: string
-    type: object
-  internal_handler.MediaListAllResponse:
-    properties:
-      images:
-        items:
-          $ref: '#/definitions/headless-cms_internal_models.Image'
-        type: array
-      videos:
-        items:
-          $ref: '#/definitions/headless-cms_internal_models.Video'
-        type: array
     type: object
 info:
   contact: {}
@@ -186,12 +256,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/headless-cms_internal_models.Article'
+              $ref: '#/definitions/models.Article'
             type: array
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Получить все статьи
       tags:
       - Статьи
@@ -204,30 +274,30 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/headless-cms_internal_models.Article'
+          $ref: '#/definitions/models.Article'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.Article'
+            $ref: '#/definitions/models.Article'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Создать статью
@@ -251,19 +321,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Удалить статью
@@ -282,15 +352,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.Article'
+            $ref: '#/definitions/models.Article'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Получить статью по ID
       tags:
       - Статьи
@@ -308,30 +378,30 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/headless-cms_internal_models.Article'
+          $ref: '#/definitions/models.Article'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.Article'
+            $ref: '#/definitions/models.Article'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Обновить статью
@@ -349,26 +419,26 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/internal_handler.AuthLoginRequest'
+          $ref: '#/definitions/handler.AuthLoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_handler.AuthLoginResponse'
+            $ref: '#/definitions/handler.AuthLoginResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Вход и получение JWT токена
       tags:
       - Авторизация
@@ -383,30 +453,66 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/internal_handler.AuthRegisterRequest'
+          $ref: '#/definitions/handler.AuthRegisterRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.User'
+            $ref: '#/definitions/models.User'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Регистрация пользователя
       tags:
       - Авторизация
   /api/v1/images/{id}:
+    delete:
+      description: Удаляет запись и объект(ы) в MinIO, включая производные размеры.
+      parameters:
+      - description: ID изображения
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить изображение
+      tags:
+      - Медиа
     get:
       parameters:
       - description: ID изображения
@@ -420,16 +526,64 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.Image'
+            $ref: '#/definitions/models.Image'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Получить изображение по ID
+      tags:
+      - Медиа
+    patch:
+      consumes:
+      - application/json
+      description: Обновляет поле name (alt/подпись), файлы в MinIO не перезагружаются.
+      parameters:
+      - description: ID изображения
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Новое имя
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.MediaRenameBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Image'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Переименовать изображение
       tags:
       - Медиа
   /api/v1/media:
@@ -452,16 +606,16 @@ paths:
           description: Если type=videos
           schema:
             items:
-              $ref: '#/definitions/headless-cms_internal_models.Video'
+              $ref: '#/definitions/models.Video'
             type: array
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Получить медиа-материалы
       tags:
       - Медиа
@@ -487,23 +641,23 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.Image'
+            $ref: '#/definitions/models.Image'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Загрузить изображение
@@ -535,23 +689,23 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.Video'
+            $ref: '#/definitions/models.Video'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Загрузить видео
@@ -566,12 +720,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/headless-cms_internal_models.News'
+              $ref: '#/definitions/models.News'
             type: array
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Получить список новостей
       tags:
       - Новости
@@ -586,30 +740,30 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/headless-cms_internal_models.News'
+          $ref: '#/definitions/models.News'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.News'
+            $ref: '#/definitions/models.News'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Создать новость
@@ -633,19 +787,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Удалить новость
@@ -664,15 +818,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.News'
+            $ref: '#/definitions/models.News'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Получить новость по ID
       tags:
       - Новости
@@ -691,30 +845,30 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/headless-cms_internal_models.News'
+          $ref: '#/definitions/models.News'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.News'
+            $ref: '#/definitions/models.News'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Обновить новость
@@ -729,12 +883,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/headless-cms_internal_models.Section'
+              $ref: '#/definitions/models.Section'
             type: array
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Получить все разделы
       tags:
       - Разделы
@@ -747,30 +901,30 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/headless-cms_internal_models.Section'
+          $ref: '#/definitions/models.Section'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.Section'
+            $ref: '#/definitions/models.Section'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Создать раздел
@@ -794,19 +948,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Удалить раздел
@@ -825,15 +979,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.Section'
+            $ref: '#/definitions/models.Section'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Получить раздел по ID
       tags:
       - Разделы
@@ -851,30 +1005,30 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/headless-cms_internal_models.Section'
+          $ref: '#/definitions/models.Section'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.Section'
+            $ref: '#/definitions/models.Section'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Обновить раздел
@@ -895,16 +1049,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/headless-cms_internal_models.Article'
+              $ref: '#/definitions/models.Article'
             type: array
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Получить статьи раздела
       tags:
       - Статьи
@@ -923,20 +1077,168 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/headless-cms_internal_models.Section'
+              $ref: '#/definitions/models.Section'
             type: array
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Получить дочерние разделы
       tags:
       - Разделы
+  /api/v1/settings:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Settings'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Получить настройки (название проекта, SEO, баннер)
+      tags:
+      - Настройки сайта
+    patch:
+      consumes:
+      - application/json
+      description: Обычно одна запись (id=1). URL логотипа, favicon, OG-image и т.д.
+        — строки или null.
+      parameters:
+      - description: Настройки
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Settings'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Settings'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить настройки
+      tags:
+      - Настройки сайта
+  /api/v1/theme:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Theme'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Получить тему (светлая/тёмная палитра)
+      tags:
+      - Тема оформления
+    patch:
+      consumes:
+      - application/json
+      description: 'Обычно одна запись (id=1). Цвета в формате CSS, например #007aff.'
+      parameters:
+      - description: Тема (id из body или существующая запись)
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Theme'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Theme'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить тему
+      tags:
+      - Тема оформления
   /api/v1/videos/{id}:
+    delete:
+      description: Удаляет запись и объект в MinIO; thumbnail-изображение не удаляется
+        автоматически.
+      parameters:
+      - description: ID видео
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить видео
+      tags:
+      - Медиа
     get:
       parameters:
       - description: ID видео
@@ -950,16 +1252,64 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/headless-cms_internal_models.Video'
+            $ref: '#/definitions/models.Video'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Получить видео по ID
+      tags:
+      - Медиа
+    patch:
+      consumes:
+      - application/json
+      description: Обновляет поле name; файл в MinIO не перезагружается.
+      parameters:
+      - description: ID видео
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Новое название
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.MediaRenameBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Video'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Переименовать видео
       tags:
       - Медиа
 securityDefinitions:

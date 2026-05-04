@@ -33,16 +33,15 @@ func NewAuthService(cfg *config.Config, repo repos.IUserRepo) *AuthService {
 		if err != nil {
 			panic(err)
 		}
-    u := &models.User{
-      Nickname:     cfg.Admin.Nickname,
-      PasswordHash: string(hash),
-      Role:         models.RoleAdmin,
-    }
-    if err := repo.Create(u); err != nil && !errors.Is(err, gorm.ErrDuplicatedKey) {
-      panic(err)
-    }
-  }
-
+		u := &models.User{
+			Nickname:     cfg.Admin.Nickname,
+			PasswordHash: string(hash),
+			Role:         models.RoleAdmin,
+		}
+		if err := repo.Create(u); err != nil && !errors.Is(err, gorm.ErrDuplicatedKey) {
+			panic(err)
+		}
+	}
 	return &AuthService{cfg: cfg, repo: repo}
 }
 

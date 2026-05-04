@@ -181,6 +181,23 @@ func (h *Handler) GetVideo(c echo.Context) error {
 	return c.JSON(http.StatusOK, v)
 }
 
+// PatchImage
+//
+// @Tags Медиа
+// @Summary Переименовать изображение
+// @Description Обновляет поле name (alt/подпись), файлы в MinIO не перезагружаются.
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path int true "ID изображения"
+// @Param body body MediaRenameBody true "Новое имя"
+// @Success 200 {object} models.Image
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/images/{id} [patch]
 func (h *Handler) PatchImage(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -202,6 +219,20 @@ func (h *Handler) PatchImage(c echo.Context) error {
 	return c.JSON(http.StatusOK, img)
 }
 
+// DeleteImageHandler
+//
+// @Tags Медиа
+// @Summary Удалить изображение
+// @Description Удаляет запись и объект(ы) в MinIO, включая производные размеры.
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "ID изображения"
+// @Success 204 {string} string "No Content"
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/images/{id} [delete]
 func (h *Handler) DeleteImageHandler(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -213,6 +244,23 @@ func (h *Handler) DeleteImageHandler(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+// PatchVideo
+//
+// @Tags Медиа
+// @Summary Переименовать видео
+// @Description Обновляет поле name; файл в MinIO не перезагружается.
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path int true "ID видео"
+// @Param body body MediaRenameBody true "Новое название"
+// @Success 200 {object} models.Video
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/videos/{id} [patch]
 func (h *Handler) PatchVideo(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -234,6 +282,20 @@ func (h *Handler) PatchVideo(c echo.Context) error {
 	return c.JSON(http.StatusOK, v)
 }
 
+// DeleteVideoHandler
+//
+// @Tags Медиа
+// @Summary Удалить видео
+// @Description Удаляет запись и объект в MinIO; thumbnail-изображение не удаляется автоматически.
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "ID видео"
+// @Success 204 {string} string "No Content"
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/videos/{id} [delete]
 func (h *Handler) DeleteVideoHandler(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

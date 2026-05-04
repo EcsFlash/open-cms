@@ -27,3 +27,8 @@ type MediaListAllResponse struct {
 	Videos []models.Video `json:"videos"`
 }
 
+// MediaRenameBody тело PATCH для смены отображаемого имени изображения или видео.
+type MediaRenameBody struct {
+	Name string `json:"name" example:"hero-banner"`
+}
+
