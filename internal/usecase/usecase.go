@@ -13,6 +13,8 @@ type UseCase struct {
 	news     services.INewsService
 	auth     services.IAuthService
 	media    services.IMediaService
+	theme    services.IThemeService
+	settings services.ISettingsService
 }
 
 type IUseCase interface {
@@ -50,6 +52,18 @@ type IUseCase interface {
 	GetVideoByID(id uint) (*models.Video, error)
 	ListImages() ([]models.Image, error)
 	ListVideos() ([]models.Video, error)
+	RenameImage(id uint, name string) error
+	DeleteImage(ctx context.Context, id uint) error
+	RenameVideo(id uint, name string) error
+	DeleteVideo(ctx context.Context, id uint) error
+
+	// theme
+	GetTheme() (*models.Theme, error)
+	UpdateTheme(t *models.Theme) error
+
+	// settings
+	GetSettings() (*models.Settings, error)
+	UpdateSettings(s *models.Settings) error
 }
 
 func NewUseCase(
@@ -58,6 +72,8 @@ func NewUseCase(
 	news services.INewsService,
 	auth services.IAuthService,
 	media services.IMediaService,
+	theme services.IThemeService,
+	settings services.ISettingsService,
 ) *UseCase {
 	return &UseCase{
 		sections: sections,
@@ -65,6 +81,8 @@ func NewUseCase(
 		news:     news,
 		auth:     auth,
 		media:    media,
+		theme:    theme,
+		settings: settings,
 	}
 }
 
@@ -112,4 +130,14 @@ func (u *UseCase) GetImageByID(id uint) (*models.Image, error) { return u.media.
 func (u *UseCase) GetVideoByID(id uint) (*models.Video, error) { return u.media.GetVideoByID(id) }
 func (u *UseCase) ListImages() ([]models.Image, error)         { return u.media.ListImages() }
 func (u *UseCase) ListVideos() ([]models.Video, error)         { return u.media.ListVideos() }
+func (u *UseCase) RenameImage(id uint, name string) error      { return u.media.RenameImage(id, name) }
+func (u *UseCase) DeleteImage(ctx context.Context, id uint) error { return u.media.DeleteImage(ctx, id) }
+func (u *UseCase) RenameVideo(id uint, name string) error      { return u.media.RenameVideo(id, name) }
+func (u *UseCase) DeleteVideo(ctx context.Context, id uint) error { return u.media.DeleteVideo(ctx, id) }
+
+func (u *UseCase) GetTheme() (*models.Theme, error)              { return u.theme.Get() }
+func (u *UseCase) UpdateTheme(t *models.Theme) error             { return u.theme.Update(t) }
+
+func (u *UseCase) GetSettings() (*models.Settings, error)        { return u.settings.Get() }
+func (u *UseCase) UpdateSettings(s *models.Settings) error       { return u.settings.Update(s) }
 

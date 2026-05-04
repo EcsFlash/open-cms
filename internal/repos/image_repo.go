@@ -18,6 +18,8 @@ type IImageRepo interface {
 	Create(img *models.Image) error
 	GetByID(id uint) (*models.Image, error)
 	ListAll() ([]models.Image, error)
+	UpdateName(id uint, name string) error
+	Delete(id uint) error
 }
 
 func (r *ImageRepo) Create(img *models.Image) error {
@@ -38,5 +40,13 @@ func (r *ImageRepo) ListAll() ([]models.Image, error) {
 		return nil, err
 	}
 	return res, nil
+}
+
+func (r *ImageRepo) UpdateName(id uint, name string) error {
+	return r.db.Model(&models.Image{}).Where("id = ?", id).Update("name", name).Error
+}
+
+func (r *ImageRepo) Delete(id uint) error {
+	return r.db.Delete(&models.Image{}, id).Error
 }
 

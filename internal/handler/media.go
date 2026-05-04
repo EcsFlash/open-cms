@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
@@ -178,5 +179,69 @@ func (h *Handler) GetVideo(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, map[string]any{"error": "not found"})
 	}
 	return c.JSON(http.StatusOK, v)
+}
+
+func (h *Handler) PatchImage(c echo.Context) error {
+	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]any{"error": "invalid id"})
+	}
+	var body struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(c.Request().Body).Decode(&body); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
+	}
+	if err := h.uc.RenameImage(uint(id64), body.Name); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err.Error()})
+	}
+	img, err := h.uc.GetImageByID(uint(id64))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]any{"error": "not found"})
+	}
+	return c.JSON(http.StatusOK, img)
+}
+
+func (h *Handler) DeleteImageHandler(c echo.Context) error {
+	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]any{"error": "invalid id"})
+	}
+	if err := h.uc.DeleteImage(c.Request().Context(), uint(id64)); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err.Error()})
+	}
+	return c.NoContent(http.StatusNoContent)
+}
+
+func (h *Handler) PatchVideo(c echo.Context) error {
+	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]any{"error": "invalid id"})
+	}
+	var body struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(c.Request().Body).Decode(&body); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
+	}
+	if err := h.uc.RenameVideo(uint(id64), body.Name); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err.Error()})
+	}
+	v, err := h.uc.GetVideoByID(uint(id64))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]any{"error": "not found"})
+	}
+	return c.JSON(http.StatusOK, v)
+}
+
+func (h *Handler) DeleteVideoHandler(c echo.Context) error {
+	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]any{"error": "invalid id"})
+	}
+	if err := h.uc.DeleteVideo(c.Request().Context(), uint(id64)); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err.Error()})
+	}
+	return c.NoContent(http.StatusNoContent)
 }
 
