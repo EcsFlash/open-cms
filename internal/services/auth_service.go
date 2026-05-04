@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"gorm.io/gorm"
 	"headless-cms/internal/config"
 	"headless-cms/internal/models"
 	"headless-cms/internal/repos"
@@ -37,7 +38,7 @@ func NewAuthService(cfg *config.Config, repo repos.IUserRepo) *AuthService {
 		PasswordHash: string(hash),
 		Role:         models.RoleAdmin,
 	}
-	if err := repo.Create(u); err != nil {
+	if err := repo.Create(u); err != nil && !errors.Is(err, gorm.ErrDuplicatedKey) {
 		panic(err)
 	}
 
