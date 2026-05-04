@@ -30,7 +30,8 @@ func Open(cfg *config.Config) (*gorm.DB, error) {
 	)
 
 	return gorm.Open(postgres.Open(cfg.Database.DSN()), &gorm.Config{
-		Logger: gormLogger,
+		Logger:         gormLogger,
+		TranslateError: true, // map PG codes (e.g. 23505) to gorm.ErrDuplicatedKey for errors.Is
 	})
 }
 
