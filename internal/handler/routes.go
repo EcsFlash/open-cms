@@ -25,6 +25,7 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, uc usecase.IUseCase, log s
 
 	auth := v1.Group("/auth")
 	auth.POST("/register", h.Register)
+	auth.POST("/register_supervisor", h.RegisterSupervisor)
 	auth.POST("/login", h.Login)
 
 	mod := v1.Group("", JWTAuth(cfg), RequireRole(models.RoleModerator, models.RoleAdmin))
@@ -34,24 +35,24 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, uc usecase.IUseCase, log s
 	v1.GET("/sections", h.ListSections)
 	v1.GET("/sections/:id", h.GetSection)
 	v1.GET("/sections/:id/children", h.ListSectionChildren)
-	admin.POST("/sections", h.CreateSection)
+	mod.POST("/sections", h.CreateSection)
 	mod.PATCH("/sections/:id", h.UpdateSection)
-	admin.DELETE("/sections/:id", h.DeleteSection)
+	mod.DELETE("/sections/:id", h.DeleteSection)
 
 	// Articles
 	v1.GET("/articles", h.ListArticles)
 	v1.GET("/articles/:id", h.GetArticle)
 	v1.GET("/sections/:id/articles", h.ListArticlesBySection)
-	admin.POST("/articles", h.CreateArticle)
+	mod.POST("/articles", h.CreateArticle)
 	mod.PATCH("/articles/:id", h.UpdateArticle)
-	admin.DELETE("/articles/:id", h.DeleteArticle)
+	mod.DELETE("/articles/:id", h.DeleteArticle)
 
 	// News
 	v1.GET("/news", h.ListNews)
 	v1.GET("/news/:id", h.GetNews)
-	admin.POST("/news", h.CreateNews)
+	mod.POST("/news", h.CreateNews)
 	mod.PATCH("/news/:id", h.UpdateNews)
-	admin.DELETE("/news/:id", h.DeleteNews)
+	mod.DELETE("/news/:id", h.DeleteNews)
 
 	// Media
 	v1.GET("/media", h.ListMedia)
@@ -60,9 +61,9 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, uc usecase.IUseCase, log s
 	mod.POST("/media/images", h.UploadImage)
 	mod.POST("/media/videos", h.UploadVideo)
 	mod.PATCH("/images/:id", h.PatchImage)
-	admin.DELETE("/images/:id", h.DeleteImageHandler)
+	mod.DELETE("/images/:id", h.DeleteImageHandler)
 	mod.PATCH("/videos/:id", h.PatchVideo)
-	admin.DELETE("/videos/:id", h.DeleteVideoHandler)
+	mod.DELETE("/videos/:id", h.DeleteVideoHandler)
 
 	// Theme
 	v1.GET("/theme", h.GetTheme)
@@ -72,4 +73,3 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, uc usecase.IUseCase, log s
 	v1.GET("/settings", h.GetSettings)
 	admin.PATCH("/settings", h.UpdateSettings)
 }
-
