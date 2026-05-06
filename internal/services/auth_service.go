@@ -25,6 +25,7 @@ type AuthService struct {
 type IAuthService interface {
 	Register(nickname, password string) (*models.User, error)
 	Login(nickname, password string) (string, *models.User, error)
+	RegisterSupervisor(nickname, password string, role models.Role) (*models.User, error)
 }
 
 func NewAuthService(cfg *config.Config, repo repos.IUserRepo) *AuthService {
@@ -60,6 +61,28 @@ func (s *AuthService) Register(nickname, password string) (*models.User, error) 
 		Nickname:     nickname,
 		PasswordHash: string(hash),
 		Role:         models.RoleUser,
+	}
+	if err := s.repo.Create(u); err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+func (s *AuthService) RegisterSupervisor(nickname, password string, role models.Role) (*models.User, error) {
+	if nickname == "" || password == "" {
+		return nil, errors.New("nickname and password are required")
+	}
+	if _, err := s.repo.GetByNickname(nickname); err == nil {
+		return nil, ErrNicknameTaken
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	u := &models.User{
+		Nickname:     nickname,
+		PasswordHash: string(hash),
+		Role:         role,
 	}
 	if err := s.repo.Create(u); err != nil {
 		return nil, err

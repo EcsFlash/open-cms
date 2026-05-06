@@ -14,4 +14,9 @@ type News struct {
 
 	Short   string `json:"short" gorm:"not null"`
 	Content string `json:"content" gorm:"type:text;not null"`
+
+	AuthorID uint `json:"author_id" gorm:"index;not null"`
+	Author   User `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+
+	ShowAuthor bool `json:"show_author" gorm:"default:false;not null"`
 }

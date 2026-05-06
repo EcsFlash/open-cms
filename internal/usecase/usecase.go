@@ -43,6 +43,7 @@ type IUseCase interface {
 
 	// auth
 	Register(nickname, password string) (*models.User, error)
+	RegisterSupervisor(nickname, password string, role models.Role) (*models.User, error)
 	Login(nickname, password string) (string, *models.User, error)
 
 	// media
@@ -86,34 +87,37 @@ func NewUseCase(
 	}
 }
 
-func (u *UseCase) CreateSection(section *models.Section) error             { return u.sections.Create(section) }
-func (u *UseCase) UpdateSection(section *models.Section) error             { return u.sections.Update(section) }
-func (u *UseCase) DeleteSection(id uint) error                             { return u.sections.Delete(id) }
-func (u *UseCase) GetSectionByID(id uint) (*models.Section, error)         { return u.sections.GetByID(id) }
-func (u *UseCase) ListSections() ([]models.Section, error)                 { return u.sections.ListAll() }
+func (u *UseCase) CreateSection(section *models.Section) error     { return u.sections.Create(section) }
+func (u *UseCase) UpdateSection(section *models.Section) error     { return u.sections.Update(section) }
+func (u *UseCase) DeleteSection(id uint) error                     { return u.sections.Delete(id) }
+func (u *UseCase) GetSectionByID(id uint) (*models.Section, error) { return u.sections.GetByID(id) }
+func (u *UseCase) ListSections() ([]models.Section, error)         { return u.sections.ListAll() }
 func (u *UseCase) ListSectionChildren(parentID uint) ([]models.Section, error) {
 	return u.sections.ListChildren(parentID)
 }
 
-func (u *UseCase) CreateArticle(a *models.Article) error                   { return u.articles.Create(a) }
-func (u *UseCase) UpdateArticle(a *models.Article) error                   { return u.articles.Update(a) }
-func (u *UseCase) DeleteArticle(id uint) error                             { return u.articles.Delete(id) }
-func (u *UseCase) GetArticleByID(id uint) (*models.Article, error)         { return u.articles.GetByID(id) }
-func (u *UseCase) ListArticles() ([]models.Article, error)                 { return u.articles.ListAll() }
+func (u *UseCase) CreateArticle(a *models.Article) error           { return u.articles.Create(a) }
+func (u *UseCase) UpdateArticle(a *models.Article) error           { return u.articles.Update(a) }
+func (u *UseCase) DeleteArticle(id uint) error                     { return u.articles.Delete(id) }
+func (u *UseCase) GetArticleByID(id uint) (*models.Article, error) { return u.articles.GetByID(id) }
+func (u *UseCase) ListArticles() ([]models.Article, error)         { return u.articles.ListAll() }
 func (u *UseCase) ListArticlesBySection(sectionID uint) ([]models.Article, error) {
 	return u.articles.ListBySection(sectionID)
 }
 
-func (u *UseCase) CreateNews(n *models.News) error                         { return u.news.Create(n) }
-func (u *UseCase) UpdateNews(n *models.News) error                         { return u.news.Update(n) }
-func (u *UseCase) DeleteNews(id uint) error                                { return u.news.Delete(id) }
-func (u *UseCase) GetNewsByID(id uint) (*models.News, error)               { return u.news.GetByID(id) }
-func (u *UseCase) ListNews() ([]models.News, error)                        { return u.news.ListAll() }
+func (u *UseCase) CreateNews(n *models.News) error           { return u.news.Create(n) }
+func (u *UseCase) UpdateNews(n *models.News) error           { return u.news.Update(n) }
+func (u *UseCase) DeleteNews(id uint) error                  { return u.news.Delete(id) }
+func (u *UseCase) GetNewsByID(id uint) (*models.News, error) { return u.news.GetByID(id) }
+func (u *UseCase) ListNews() ([]models.News, error)          { return u.news.ListAll() }
 
 func (u *UseCase) Register(nickname, password string) (*models.User, error) {
 	return u.auth.Register(nickname, password)
 }
 
+func (u *UseCase) RegisterSupervisor(nickname, password string, role models.Role) (*models.User, error) {
+	return u.auth.RegisterSupervisor(nickname, password, role)
+}
 func (u *UseCase) Login(nickname, password string) (string, *models.User, error) {
 	return u.auth.Login(nickname, password)
 }
@@ -131,13 +135,16 @@ func (u *UseCase) GetVideoByID(id uint) (*models.Video, error) { return u.media.
 func (u *UseCase) ListImages() ([]models.Image, error)         { return u.media.ListImages() }
 func (u *UseCase) ListVideos() ([]models.Video, error)         { return u.media.ListVideos() }
 func (u *UseCase) RenameImage(id uint, name string) error      { return u.media.RenameImage(id, name) }
-func (u *UseCase) DeleteImage(ctx context.Context, id uint) error { return u.media.DeleteImage(ctx, id) }
-func (u *UseCase) RenameVideo(id uint, name string) error      { return u.media.RenameVideo(id, name) }
-func (u *UseCase) DeleteVideo(ctx context.Context, id uint) error { return u.media.DeleteVideo(ctx, id) }
+func (u *UseCase) DeleteImage(ctx context.Context, id uint) error {
+	return u.media.DeleteImage(ctx, id)
+}
+func (u *UseCase) RenameVideo(id uint, name string) error { return u.media.RenameVideo(id, name) }
+func (u *UseCase) DeleteVideo(ctx context.Context, id uint) error {
+	return u.media.DeleteVideo(ctx, id)
+}
 
-func (u *UseCase) GetTheme() (*models.Theme, error)              { return u.theme.Get() }
-func (u *UseCase) UpdateTheme(t *models.Theme) error             { return u.theme.Update(t) }
+func (u *UseCase) GetTheme() (*models.Theme, error)  { return u.theme.Get() }
+func (u *UseCase) UpdateTheme(t *models.Theme) error { return u.theme.Update(t) }
 
-func (u *UseCase) GetSettings() (*models.Settings, error)        { return u.settings.Get() }
-func (u *UseCase) UpdateSettings(s *models.Settings) error       { return u.settings.Update(s) }
-
+func (u *UseCase) GetSettings() (*models.Settings, error)  { return u.settings.Get() }
+func (u *UseCase) UpdateSettings(s *models.Settings) error { return u.settings.Update(s) }
