@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"headless-cms/internal/models"
 	"headless-cms/internal/services"
 	"headless-cms/pkg/sl"
@@ -15,6 +16,7 @@ import (
 //
 // @Tags Разделы
 // @Summary Создать раздел
+// @Description Доступно moderator и admin. Автор раздела назначается автоматически из JWT; author_id из тела запроса игнорируется.
 // @Security BearerAuth
 // @Accept json
 // @Produce json
@@ -26,18 +28,24 @@ import (
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/sections [post]
 func (h *Handler) CreateSection(c echo.Context) error {
+	actor, ok := CurrentActor(c)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
+	}
 	var s models.Section
 	if err := json.NewDecoder(c.Request().Body).Decode(&s); err != nil {
 		h.log.Error("decode create section", sl.Err(err))
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
 	}
-	s.ID = 0
-	if err := h.uc.CreateSection(&s); err != nil {
+	if err := h.uc.CreateSection(actor, &s); err != nil {
 		status := http.StatusInternalServerError
-		if err == services.ErrSectionCycle {
+		if errors.Is(err, services.ErrSectionCycle) {
 			status = http.StatusBadRequest
 		}
 		h.log.Error("create section failed", sl.Err(err))
+		if status == http.StatusInternalServerError {
+			return useCaseErrorResponse(c, err)
+		}
 		return c.JSON(status, map[string]any{"error": err.Error()})
 	}
 	return c.JSON(http.StatusCreated, s)
@@ -47,6 +55,7 @@ func (h *Handler) CreateSection(c echo.Context) error {
 //
 // @Tags Разделы
 // @Summary Обновить раздел
+// @Description Admin может обновить любой раздел. Moderator может обновить только свой раздел.
 // @Security BearerAuth
 // @Accept json
 // @Produce json
@@ -59,6 +68,10 @@ func (h *Handler) CreateSection(c echo.Context) error {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/sections/{id} [patch]
 func (h *Handler) UpdateSection(c echo.Context) error {
+	actor, ok := CurrentActor(c)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
+	}
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": "invalid id"})
@@ -69,12 +82,15 @@ func (h *Handler) UpdateSection(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
 	}
 	s.ID = uint(id)
-	if err := h.uc.UpdateSection(&s); err != nil {
+	if err := h.uc.UpdateSection(actor, &s); err != nil {
 		status := http.StatusInternalServerError
-		if err == services.ErrSectionCycle {
+		if errors.Is(err, services.ErrSectionCycle) {
 			status = http.StatusBadRequest
 		}
 		h.log.Error("update section failed", sl.Err(err))
+		if status == http.StatusInternalServerError {
+			return useCaseErrorResponse(c, err)
+		}
 		return c.JSON(status, map[string]any{"error": err.Error()})
 	}
 	updated, _ := h.uc.GetSectionByID(uint(id))
@@ -85,6 +101,7 @@ func (h *Handler) UpdateSection(c echo.Context) error {
 //
 // @Tags Разделы
 // @Summary Удалить раздел
+// @Description Admin может удалить любой раздел. Moderator может удалить только свой раздел.
 // @Security BearerAuth
 // @Produce json
 // @Param id path int true "ID раздела"
@@ -95,13 +112,17 @@ func (h *Handler) UpdateSection(c echo.Context) error {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/sections/{id} [delete]
 func (h *Handler) DeleteSection(c echo.Context) error {
+	actor, ok := CurrentActor(c)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
+	}
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": "invalid id"})
 	}
-	if err := h.uc.DeleteSection(uint(id)); err != nil {
+	if err := h.uc.DeleteSection(actor, uint(id)); err != nil {
 		h.log.Error("delete section failed", sl.Err(err))
-		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err.Error()})
+		return useCaseErrorResponse(c, err)
 	}
 	return c.NoContent(http.StatusNoContent)
 }

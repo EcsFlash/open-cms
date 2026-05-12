@@ -48,6 +48,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Доступно moderator и admin. Автор статьи назначается автоматически из JWT; author_id из тела запроса игнорируется.",
                 "consumes": [
                     "application/json"
                 ],
@@ -148,6 +149,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Admin может удалить любую статью. Moderator может удалить только свою статью.",
                 "produces": [
                     "application/json"
                 ],
@@ -203,6 +205,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Admin может обновить любую статью. Moderator может обновить только свою статью.",
                 "consumes": [
                     "application/json"
                 ],
@@ -369,6 +372,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/auth/register_supervisor": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Создаёт пользователя с ролью moderator или admin. Доступно только пользователю с ролью admin.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Авторизация"
+                ],
+                "summary": "Защищенный метод для регистрации служебных учетных записей, с предоставлением привелегий",
+                "parameters": [
+                    {
+                        "description": "Данные регистрации служебной учетной записи",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.AuthRegisterSupervisorRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/images/{id}": {
             "get": {
                 "produces": [
@@ -414,7 +486,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Удаляет запись и объект(ы) в MinIO, включая производные размеры.",
+                "description": "Admin может удалить любое изображение. Moderator может удалить только свое изображение. Удаляет запись и объект(ы) в MinIO, включая производные размеры.",
                 "produces": [
                     "application/json"
                 ],
@@ -470,7 +542,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Обновляет поле name (alt/подпись), файлы в MinIO не перезагружаются.",
+                "description": "Admin может переименовать любое изображение. Moderator может переименовать только свое изображение. Обновляет поле name (alt/подпись), файлы в MinIO не перезагружаются.",
                 "consumes": [
                     "application/json"
                 ],
@@ -595,7 +667,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Загружает оригинал + генерирует копии large/medium/mini/thumbnail. Данные хранятся в MinIO и метаданные в Postgres.",
+                "description": "Доступно moderator и admin. Владелец изображения назначается автоматически из JWT. Загружает оригинал + генерирует копии large/medium/mini/thumbnail. Данные хранятся в MinIO и метаданные в Postgres.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -662,7 +734,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Загружает видео в MinIO. Если thumbnail_image_id не задан, thumbnail генерируется автоматически из первого кадра (ffmpeg) и сохраняется как Image.",
+                "description": "Доступно moderator и admin. Владелец видео назначается автоматически из JWT. Загружает видео в MinIO. Если thumbnail_image_id не задан, thumbnail генерируется автоматически из первого кадра (ffmpeg) и сохраняется как Image того же владельца.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -761,7 +833,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Краткое описание (short) автоматически вычисляется из markdown-контента (картинки вырезаются regexp).",
+                "description": "Доступно moderator и admin. Автор новости назначается автоматически из JWT; author_id из тела запроса игнорируется. Краткое описание (short) автоматически вычисляется из markdown-контента (картинки вырезаются regexp).",
                 "consumes": [
                     "application/json"
                 ],
@@ -862,6 +934,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Admin может удалить любую новость. Moderator может удалить только свою новость.",
                 "produces": [
                     "application/json"
                 ],
@@ -917,7 +990,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "При обновлении short пересчитывается из content_markdown.",
+                "description": "Admin может обновить любую новость. Moderator может обновить только свою новость. При обновлении short пересчитывается из content_markdown.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1013,6 +1086,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Доступно moderator и admin. Автор раздела назначается автоматически из JWT; author_id из тела запроса игнорируется.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1113,6 +1187,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Admin может удалить любой раздел. Moderator может удалить только свой раздел.",
                 "produces": [
                     "application/json"
                 ],
@@ -1168,6 +1243,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Admin может обновить любой раздел. Moderator может обновить только свой раздел.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1533,7 +1609,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Удаляет запись и объект в MinIO; thumbnail-изображение не удаляется автоматически.",
+                "description": "Admin может удалить любое видео. Moderator может удалить только свое видео. Удаляет запись и объект в MinIO; thumbnail-изображение не удаляется автоматически.",
                 "produces": [
                     "application/json"
                 ],
@@ -1589,7 +1665,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Обновляет поле name; файл в MinIO не перезагружается.",
+                "description": "Admin может переименовать любое видео. Moderator может переименовать только свое видео. Обновляет поле name; файл в MinIO не перезагружается.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1698,6 +1774,27 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.AuthRegisterSupervisorRequest": {
+            "type": "object",
+            "properties": {
+                "nickname": {
+                    "type": "string",
+                    "example": "moderator1"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "qwerty123"
+                },
+                "role": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Role"
+                        }
+                    ],
+                    "example": "moderator"
+                }
+            }
+        },
         "handler.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -1736,6 +1833,9 @@ const docTemplate = `{
         "models.Article": {
             "type": "object",
             "properties": {
+                "author_id": {
+                    "type": "integer"
+                },
                 "content_markdown": {
                     "type": "string"
                 },
@@ -1745,8 +1845,14 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "is_visible": {
+                    "type": "boolean"
+                },
                 "section_id": {
                     "type": "integer"
+                },
+                "show_author": {
+                    "type": "boolean"
                 },
                 "title": {
                     "type": "string"
@@ -1796,6 +1902,9 @@ const docTemplate = `{
                 "updated_at": {
                     "type": "string"
                 },
+                "uploader_id": {
+                    "type": "integer"
+                },
                 "width": {
                     "type": "integer"
                 }
@@ -1804,6 +1913,9 @@ const docTemplate = `{
         "models.News": {
             "type": "object",
             "properties": {
+                "author_id": {
+                    "type": "integer"
+                },
                 "content": {
                     "type": "string"
                 },
@@ -1821,6 +1933,9 @@ const docTemplate = `{
                 },
                 "short": {
                     "type": "string"
+                },
+                "show_author": {
+                    "type": "boolean"
                 },
                 "title": {
                     "type": "string"
@@ -1846,6 +1961,9 @@ const docTemplate = `{
         "models.Section": {
             "type": "object",
             "properties": {
+                "author_id": {
+                    "type": "integer"
+                },
                 "children": {
                     "type": "array",
                     "items": {
@@ -1858,11 +1976,17 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "is_visible": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },
                 "parent_id": {
                     "type": "integer"
+                },
+                "show_author": {
+                    "type": "boolean"
                 },
                 "updated_at": {
                     "type": "string"
@@ -2018,6 +2142,9 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                },
+                "uploader_id": {
+                    "type": "integer"
                 }
             }
         }

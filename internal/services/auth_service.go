@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"headless-cms/internal/config"
 	"headless-cms/internal/models"
@@ -26,6 +27,7 @@ type IAuthService interface {
 	Register(nickname, password string) (*models.User, error)
 	Login(nickname, password string) (string, *models.User, error)
 	RegisterSupervisor(nickname, password string, role models.Role) (*models.User, error)
+	RemoveSupervisor(nickname string) error
 }
 
 func NewAuthService(cfg *config.Config, repo repos.IUserRepo) *AuthService {
@@ -112,4 +114,19 @@ func (s *AuthService) Login(nickname, password string) (string, *models.User, er
 		return "", nil, err
 	}
 	return token, u, nil
+}
+
+func (s *AuthService) RemoveSupervisor(nickname string) error {
+	u, err := s.repo.GetByNickname(nickname)
+	if err != nil {
+		return err
+	}
+	if u.Role != models.RoleModerator {
+		return fmt.Errorf("%s is not a moderator", nickname)
+	}
+	err = s.repo.Remove(u)
+	if err != nil {
+		return err
+	}
+	return nil
 }

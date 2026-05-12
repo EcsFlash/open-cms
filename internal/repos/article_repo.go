@@ -57,9 +57,8 @@ func (r *ArticleRepo) ListAll() ([]models.Article, error) {
 
 func (r *ArticleRepo) ListBySection(sectionID uint) ([]models.Article, error) {
 	var res []models.Article
-	if err := r.db.Order("id asc").Find(&res, "section_id = ?", sectionID).Error; err != nil {
+	if err := r.db.Order("index_priority asc").Find(&res, "section_id = ?", sectionID).Error; err != nil {
 		return nil, err
 	}
 	return res, nil
 }
-

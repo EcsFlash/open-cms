@@ -17,4 +17,7 @@ type Article struct {
 	Author   User `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 
 	ShowAuthor bool `json:"show_author" gorm:"default:false;not null"`
+
+	IsVisible bool `json:"is_visible" gorm:"default:true;not null"`
+	Index     uint `json:"index" gorm:"column: index_priority; default:0;not null"`
 }

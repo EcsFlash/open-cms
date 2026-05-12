@@ -18,6 +18,7 @@ type IUserRepo interface {
 	Create(u *models.User) error
 	GetByID(id uint) (*models.User, error)
 	GetByNickname(nickname string) (*models.User, error)
+	Remove(u *models.User) error
 }
 
 func (r *UserRepo) Create(u *models.User) error {
@@ -40,3 +41,9 @@ func (r *UserRepo) GetByNickname(nickname string) (*models.User, error) {
 	return &u, nil
 }
 
+func (r *UserRepo) Remove(u *models.User) error {
+	if err := r.db.Delete(u).Error; err != nil {
+		return err
+	}
+	return nil
+}

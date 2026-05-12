@@ -7,7 +7,7 @@ type Settings struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	ProjectName     string  `json:"project_name"     gorm:"not null;default:'DOMIQ'"`
+	ProjectName     string  `json:"project_name"     gorm:"not null;default:'CMS'"`
 	LogoURL         *string `json:"logo_url"`
 	FaviconURL      *string `json:"favicon_url"`
 	MetaTitle       string  `json:"meta_title"       gorm:"not null;default:''"`
@@ -20,7 +20,7 @@ type Settings struct {
 
 var DefaultSettings = Settings{
 	ID:              1,
-	ProjectName:     "DOMIQ",
+	ProjectName:     "CMS",
 	LogoURL:         nil,
 	FaviconURL:      nil,
 	MetaTitle:       "",

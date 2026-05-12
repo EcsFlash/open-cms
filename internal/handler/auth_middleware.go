@@ -10,11 +10,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const (
-	ctxUserRoleKey = "user_role"
-	ctxUserIDKey   = "user_id"
-)
-
 func JWTAuth(cfg *config.Config) echo.MiddlewareFunc {
 	return echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(cfg.JWT.Secret),
@@ -70,7 +65,6 @@ func RequireRole(allowed ...models.Role) echo.MiddlewareFunc {
 	}
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			// echo-jwt stores token under "user". We'll parse role on demand in handler later
 			role, ok := ExtractRole(c)
 			if !ok {
 				return c.JSON(http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
@@ -82,4 +76,3 @@ func RequireRole(allowed ...models.Role) echo.MiddlewareFunc {
 		}
 	}
 }
-
