@@ -14,6 +14,7 @@ import (
 //
 // @Tags Статьи
 // @Summary Создать статью
+// @Description Доступно moderator и admin. Автор статьи назначается автоматически из JWT; author_id из тела запроса игнорируется.
 // @Security BearerAuth
 // @Accept json
 // @Produce json
@@ -25,15 +26,18 @@ import (
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/articles [post]
 func (h *Handler) CreateArticle(c echo.Context) error {
+	actor, ok := CurrentActor(c)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
+	}
 	var a models.Article
 	if err := json.NewDecoder(c.Request().Body).Decode(&a); err != nil {
 		h.log.Error("decode create article", sl.Err(err))
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
 	}
-	a.ID = 0
-	if err := h.uc.CreateArticle(&a); err != nil {
+	if err := h.uc.CreateArticle(actor, &a); err != nil {
 		h.log.Error("create article failed", sl.Err(err))
-		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err.Error()})
+		return useCaseErrorResponse(c, err)
 	}
 	return c.JSON(http.StatusCreated, a)
 }
@@ -42,6 +46,7 @@ func (h *Handler) CreateArticle(c echo.Context) error {
 //
 // @Tags Статьи
 // @Summary Обновить статью
+// @Description Admin может обновить любую статью. Moderator может обновить только свою статью.
 // @Security BearerAuth
 // @Accept json
 // @Produce json
@@ -54,6 +59,10 @@ func (h *Handler) CreateArticle(c echo.Context) error {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/articles/{id} [patch]
 func (h *Handler) UpdateArticle(c echo.Context) error {
+	actor, ok := CurrentActor(c)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
+	}
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": "invalid id"})
@@ -63,10 +72,11 @@ func (h *Handler) UpdateArticle(c echo.Context) error {
 		h.log.Error("decode update article", sl.Err(err))
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
 	}
+
 	a.ID = uint(id)
-	if err := h.uc.UpdateArticle(&a); err != nil {
+	if err := h.uc.UpdateArticle(actor, &a); err != nil {
 		h.log.Error("update article failed", sl.Err(err))
-		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err.Error()})
+		return useCaseErrorResponse(c, err)
 	}
 	updated, _ := h.uc.GetArticleByID(uint(id))
 	return c.JSON(http.StatusOK, updated)
@@ -76,6 +86,7 @@ func (h *Handler) UpdateArticle(c echo.Context) error {
 //
 // @Tags Статьи
 // @Summary Удалить статью
+// @Description Admin может удалить любую статью. Moderator может удалить только свою статью.
 // @Security BearerAuth
 // @Produce json
 // @Param id path int true "ID статьи"
@@ -86,13 +97,17 @@ func (h *Handler) UpdateArticle(c echo.Context) error {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/articles/{id} [delete]
 func (h *Handler) DeleteArticle(c echo.Context) error {
+	actor, ok := CurrentActor(c)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
+	}
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": "invalid id"})
 	}
-	if err := h.uc.DeleteArticle(uint(id)); err != nil {
+	if err := h.uc.DeleteArticle(actor, uint(id)); err != nil {
 		h.log.Error("delete article failed", sl.Err(err))
-		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err.Error()})
+		return useCaseErrorResponse(c, err)
 	}
 	return c.NoContent(http.StatusNoContent)
 }
@@ -158,4 +173,3 @@ func (h *Handler) ListArticlesBySection(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, res)
 }
-

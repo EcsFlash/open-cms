@@ -14,7 +14,7 @@ import (
 //
 // @Tags Новости
 // @Summary Создать новость
-// @Description Краткое описание (short) автоматически вычисляется из markdown-контента (картинки вырезаются regexp).
+// @Description Доступно moderator и admin. Автор новости назначается автоматически из JWT; author_id из тела запроса игнорируется. Краткое описание (short) автоматически вычисляется из markdown-контента (картинки вырезаются regexp).
 // @Security BearerAuth
 // @Accept json
 // @Produce json
@@ -26,15 +26,18 @@ import (
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/news [post]
 func (h *Handler) CreateNews(c echo.Context) error {
+	actor, ok := CurrentActor(c)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
+	}
 	var n models.News
 	if err := json.NewDecoder(c.Request().Body).Decode(&n); err != nil {
 		h.log.Error("decode create news", sl.Err(err))
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
 	}
-	n.ID = 0
-	if err := h.uc.CreateNews(&n); err != nil {
+	if err := h.uc.CreateNews(actor, &n); err != nil {
 		h.log.Error("create news failed", sl.Err(err))
-		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err.Error()})
+		return useCaseErrorResponse(c, err)
 	}
 	return c.JSON(http.StatusCreated, n)
 }
@@ -43,7 +46,7 @@ func (h *Handler) CreateNews(c echo.Context) error {
 //
 // @Tags Новости
 // @Summary Обновить новость
-// @Description При обновлении short пересчитывается из content_markdown.
+// @Description Admin может обновить любую новость. Moderator может обновить только свою новость. При обновлении short пересчитывается из content_markdown.
 // @Security BearerAuth
 // @Accept json
 // @Produce json
@@ -56,6 +59,10 @@ func (h *Handler) CreateNews(c echo.Context) error {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/news/{id} [patch]
 func (h *Handler) UpdateNews(c echo.Context) error {
+	actor, ok := CurrentActor(c)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
+	}
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": "invalid id"})
@@ -66,9 +73,9 @@ func (h *Handler) UpdateNews(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
 	}
 	n.ID = uint(id)
-	if err := h.uc.UpdateNews(&n); err != nil {
+	if err := h.uc.UpdateNews(actor, &n); err != nil {
 		h.log.Error("update news failed", sl.Err(err))
-		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err.Error()})
+		return useCaseErrorResponse(c, err)
 	}
 	updated, _ := h.uc.GetNewsByID(uint(id))
 	return c.JSON(http.StatusOK, updated)
@@ -78,6 +85,7 @@ func (h *Handler) UpdateNews(c echo.Context) error {
 //
 // @Tags Новости
 // @Summary Удалить новость
+// @Description Admin может удалить любую новость. Moderator может удалить только свою новость.
 // @Security BearerAuth
 // @Produce json
 // @Param id path int true "ID новости"
@@ -88,13 +96,17 @@ func (h *Handler) UpdateNews(c echo.Context) error {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/news/{id} [delete]
 func (h *Handler) DeleteNews(c echo.Context) error {
+	actor, ok := CurrentActor(c)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
+	}
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]any{"error": "invalid id"})
 	}
-	if err := h.uc.DeleteNews(uint(id)); err != nil {
+	if err := h.uc.DeleteNews(actor, uint(id)); err != nil {
 		h.log.Error("delete news failed", sl.Err(err))
-		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err.Error()})
+		return useCaseErrorResponse(c, err)
 	}
 	return c.NoContent(http.StatusNoContent)
 }
@@ -137,4 +149,3 @@ func (h *Handler) ListNews(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, res)
 }
-

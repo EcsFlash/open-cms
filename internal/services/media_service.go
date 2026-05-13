@@ -32,8 +32,8 @@ type MediaService struct {
 }
 
 type IMediaService interface {
-	UploadImage(ctx context.Context, file multipart.File, filename, contentType, name string) (*models.Image, error)
-	UploadVideo(ctx context.Context, file multipart.File, filename, contentType, name string, thumbnailImageID *uint) (*models.Video, error)
+	UploadImage(ctx context.Context, file multipart.File, filename, contentType, name string, uploaderID uint) (*models.Image, error)
+	UploadVideo(ctx context.Context, file multipart.File, filename, contentType, name string, thumbnailImageID *uint, uploaderID uint) (*models.Video, error)
 
 	GetImageByID(id uint) (*models.Image, error)
 	GetVideoByID(id uint) (*models.Video, error)
@@ -50,7 +50,7 @@ func NewMediaService(cfg *config.Config, minioCli *minio.Client, images repos.II
 	return &MediaService{cfg: cfg, minio: minioCli, images: images, videos: videos}
 }
 
-func (s *MediaService) UploadImage(ctx context.Context, file multipart.File, filename, contentType, name string) (*models.Image, error) {
+func (s *MediaService) UploadImage(ctx context.Context, file multipart.File, filename, contentType, name string, uploaderID uint) (*models.Image, error) {
 	if name == "" {
 		name = filename
 	}
@@ -121,6 +121,7 @@ func (s *MediaService) UploadImage(ctx context.Context, file multipart.File, fil
 		Width:              b.Dx(),
 		Height:             b.Dy(),
 		Bucket:             s.cfg.MinIO.ImagesBucket,
+		UploaderID:         uploaderID,
 		ObjectKeyOriginal:  origKey,
 		ObjectKeyLarge:     largeKey,
 		ObjectKeyMedium:    mediumKey,
@@ -133,7 +134,7 @@ func (s *MediaService) UploadImage(ctx context.Context, file multipart.File, fil
 	return m, nil
 }
 
-func (s *MediaService) UploadVideo(ctx context.Context, file multipart.File, filename, contentType, name string, thumbnailImageID *uint) (*models.Video, error) {
+func (s *MediaService) UploadVideo(ctx context.Context, file multipart.File, filename, contentType, name string, thumbnailImageID *uint, uploaderID uint) (*models.Video, error) {
 	if name == "" {
 		name = filename
 	}
@@ -180,7 +181,7 @@ func (s *MediaService) UploadVideo(ctx context.Context, file multipart.File, fil
 			f, err := os.Open(thumbPath)
 			if err == nil {
 				defer f.Close()
-				imgModel, err := s.UploadImage(ctx, f, "thumbnail.jpg", "image/jpeg", name+" thumbnail")
+				imgModel, err := s.UploadImage(ctx, f, "thumbnail.jpg", "image/jpeg", name+" thumbnail", uploaderID)
 				if err == nil {
 					thumbID = &imgModel.ID
 				}
@@ -189,13 +190,14 @@ func (s *MediaService) UploadVideo(ctx context.Context, file multipart.File, fil
 	}
 
 	v := &models.Video{
-		Name:              name,
-		Mime:              contentType,
-		Bucket:            s.cfg.MinIO.VideosBucket,
-		ObjectKey:         videoKey,
-		Duration:          duration,
-		ThumbnailImageID:  thumbID,
-		ThumbnailImage:    nil,
+		Name:             name,
+		Mime:             contentType,
+		Bucket:           s.cfg.MinIO.VideosBucket,
+		ObjectKey:        videoKey,
+		Duration:         duration,
+		UploaderID:       uploaderID,
+		ThumbnailImageID: thumbID,
+		ThumbnailImage:   nil,
 	}
 	if err := s.videos.Create(v); err != nil {
 		return nil, err

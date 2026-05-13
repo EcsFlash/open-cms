@@ -12,6 +12,12 @@ type AuthRegisterRequest struct {
 	Password string `json:"password" example:"qwerty123"`
 }
 
+//type AuthRegisterSupervisorRequest struct {
+//	Nickname string      `json:"nickname" example:"moderator1"`
+//	Password string      `json:"password" example:"qwerty123"`
+//	Role     models.Role `json:"role" example:"moderator"`
+//}
+
 type AuthLoginRequest struct {
 	Nickname string `json:"nickname" example:"alekc"`
 	Password string `json:"password" example:"qwerty123"`
@@ -32,3 +38,7 @@ type MediaRenameBody struct {
 	Name string `json:"name" example:"hero-banner"`
 }
 
+// RemoveSupervisorBody тело для удаления модератора
+type RemoveSupervisorBody struct {
+	Nickname string `json:"nickname" example:"alekc"`
+}

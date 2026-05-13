@@ -10,7 +10,14 @@ type Section struct {
 	Name     string `json:"name" gorm:"not null"`
 	ParentID *uint  `json:"parent_id" gorm:"index"`
 
-	Parent   *Section `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Parent   *Section  `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Children []Section `json:"children,omitempty" gorm:"foreignKey:ParentID"`
-}
 
+	AuthorID uint `json:"author_id" gorm:"index"`
+	Author   User `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+
+	ShowAuthor bool `json:"show_author" gorm:"default:false;not null"`
+
+	IsVisible bool `json:"is_visible" gorm:"default:true;not null"`
+	Index     uint `json:"index" gorm:"column:index_priority;autoIncrement;uniqueIndex;not null;"`
+}

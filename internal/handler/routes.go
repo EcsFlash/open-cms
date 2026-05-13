@@ -25,11 +25,12 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, uc usecase.IUseCase, log s
 
 	auth := v1.Group("/auth")
 	auth.POST("/register", h.Register)
-	auth.POST("/register_supervisor", h.RegisterSupervisor)
 	auth.POST("/login", h.Login)
 
 	mod := v1.Group("", JWTAuth(cfg), RequireRole(models.RoleModerator, models.RoleAdmin))
 	admin := v1.Group("", JWTAuth(cfg), RequireRole(models.RoleAdmin))
+	admin.POST("/auth/register_supervisor", h.RegisterSupervisor)
+	admin.DELETE("/auth/remove_supervisor", h.RemoveSupervisor)
 
 	// Sections
 	v1.GET("/sections", h.ListSections)

@@ -64,7 +64,7 @@ func (r *SectionRepo) ListAll() ([]models.Section, error) {
 
 func (r *SectionRepo) ListChildren(parentID uint) ([]models.Section, error) {
 	var res []models.Section
-	if err := r.db.Order("id asc").Find(&res, "parent_id = ?", parentID).Error; err != nil {
+	if err := r.db.Order("index_priority asc").Find(&res, "parent_id = ?", parentID).Error; err != nil {
 		return nil, err
 	}
 	return res, nil
@@ -77,4 +77,3 @@ func (r *SectionRepo) ListGraph() ([]SectionGraphRow, error) {
 	}
 	return rows, nil
 }
-

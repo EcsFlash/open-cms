@@ -14,6 +14,9 @@ type Image struct {
 
 	Bucket string `json:"bucket" gorm:"not null"`
 
+	UploaderID uint `json:"uploader_id" gorm:"index;not null"`
+	Uploader   User `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+
 	ObjectKeyOriginal  string `json:"object_key_original" gorm:"not null"`
 	ObjectKeyLarge     string `json:"object_key_large"`
 	ObjectKeyMedium    string `json:"object_key_medium"`

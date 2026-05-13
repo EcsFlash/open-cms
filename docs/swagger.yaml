@@ -26,6 +26,19 @@ definitions:
         example: qwerty123
         type: string
     type: object
+  handler.AuthRegisterSupervisorRequest:
+    properties:
+      nickname:
+        example: moderator1
+        type: string
+      password:
+        example: qwerty123
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/models.Role'
+        example: moderator
+    type: object
   handler.ErrorResponse:
     properties:
       error:
@@ -51,14 +64,20 @@ definitions:
     type: object
   models.Article:
     properties:
+      author_id:
+        type: integer
       content_markdown:
         type: string
       created_at:
         type: string
       id:
         type: integer
+      is_visible:
+        type: boolean
       section_id:
         type: integer
+      show_author:
+        type: boolean
       title:
         type: string
       updated_at:
@@ -91,11 +110,15 @@ definitions:
         type: string
       updated_at:
         type: string
+      uploader_id:
+        type: integer
       width:
         type: integer
     type: object
   models.News:
     properties:
+      author_id:
+        type: integer
       content:
         type: string
       created_at:
@@ -108,6 +131,8 @@ definitions:
         type: integer
       short:
         type: string
+      show_author:
+        type: boolean
       title:
         type: string
       updated_at:
@@ -125,6 +150,8 @@ definitions:
     - RoleAdmin
   models.Section:
     properties:
+      author_id:
+        type: integer
       children:
         items:
           $ref: '#/definitions/models.Section'
@@ -133,10 +160,14 @@ definitions:
         type: string
       id:
         type: integer
+      is_visible:
+        type: boolean
       name:
         type: string
       parent_id:
         type: integer
+      show_author:
+        type: boolean
       updated_at:
         type: string
     type: object
@@ -239,6 +270,8 @@ definitions:
         type: integer
       updated_at:
         type: string
+      uploader_id:
+        type: integer
     type: object
 info:
   contact: {}
@@ -268,6 +301,8 @@ paths:
     post:
       consumes:
       - application/json
+      description: Доступно moderator и admin. Автор статьи назначается автоматически
+        из JWT; author_id из тела запроса игнорируется.
       parameters:
       - description: Статья (id игнорируется)
         in: body
@@ -305,6 +340,8 @@ paths:
       - Статьи
   /api/v1/articles/{id}:
     delete:
+      description: Admin может удалить любую статью. Moderator может удалить только
+        свою статью.
       parameters:
       - description: ID статьи
         in: path
@@ -367,6 +404,8 @@ paths:
     patch:
       consumes:
       - application/json
+      description: Admin может обновить любую статью. Moderator может обновить только
+        свою статью.
       parameters:
       - description: ID статьи
         in: path
@@ -476,9 +515,57 @@ paths:
       summary: Регистрация пользователя
       tags:
       - Авторизация
+  /api/v1/auth/register_supervisor:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт пользователя с ролью moderator или admin. Доступно только
+        пользователю с ролью admin.
+      parameters:
+      - description: Данные регистрации служебной учетной записи
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AuthRegisterSupervisorRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Защищенный метод для регистрации служебных учетных записей, с предоставлением
+        привелегий
+      tags:
+      - Авторизация
   /api/v1/images/{id}:
     delete:
-      description: Удаляет запись и объект(ы) в MinIO, включая производные размеры.
+      description: Admin может удалить любое изображение. Moderator может удалить
+        только свое изображение. Удаляет запись и объект(ы) в MinIO, включая производные
+        размеры.
       parameters:
       - description: ID изображения
         in: path
@@ -541,7 +628,9 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Обновляет поле name (alt/подпись), файлы в MinIO не перезагружаются.
+      description: Admin может переименовать любое изображение. Moderator может переименовать
+        только свое изображение. Обновляет поле name (alt/подпись), файлы в MinIO
+        не перезагружаются.
       parameters:
       - description: ID изображения
         in: path
@@ -623,7 +712,8 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Загружает оригинал + генерирует копии large/medium/mini/thumbnail.
+      description: Доступно moderator и admin. Владелец изображения назначается автоматически
+        из JWT. Загружает оригинал + генерирует копии large/medium/mini/thumbnail.
         Данные хранятся в MinIO и метаданные в Postgres.
       parameters:
       - description: Файл изображения
@@ -667,8 +757,10 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Загружает видео в MinIO. Если thumbnail_image_id не задан, thumbnail
-        генерируется автоматически из первого кадра (ffmpeg) и сохраняется как Image.
+      description: Доступно moderator и admin. Владелец видео назначается автоматически
+        из JWT. Загружает видео в MinIO. Если thumbnail_image_id не задан, thumbnail
+        генерируется автоматически из первого кадра (ffmpeg) и сохраняется как Image
+        того же владельца.
       parameters:
       - description: Файл видео
         in: formData
@@ -732,8 +824,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Краткое описание (short) автоматически вычисляется из markdown-контента
-        (картинки вырезаются regexp).
+      description: Доступно moderator и admin. Автор новости назначается автоматически
+        из JWT; author_id из тела запроса игнорируется. Краткое описание (short) автоматически
+        вычисляется из markdown-контента (картинки вырезаются regexp).
       parameters:
       - description: Новость (id игнорируется)
         in: body
@@ -771,6 +864,8 @@ paths:
       - Новости
   /api/v1/news/{id}:
     delete:
+      description: Admin может удалить любую новость. Moderator может удалить только
+        свою новость.
       parameters:
       - description: ID новости
         in: path
@@ -833,7 +928,8 @@ paths:
     patch:
       consumes:
       - application/json
-      description: При обновлении short пересчитывается из content_markdown.
+      description: Admin может обновить любую новость. Moderator может обновить только
+        свою новость. При обновлении short пересчитывается из content_markdown.
       parameters:
       - description: ID новости
         in: path
@@ -895,6 +991,8 @@ paths:
     post:
       consumes:
       - application/json
+      description: Доступно moderator и admin. Автор раздела назначается автоматически
+        из JWT; author_id из тела запроса игнорируется.
       parameters:
       - description: Раздел (id игнорируется)
         in: body
@@ -932,6 +1030,8 @@ paths:
       - Разделы
   /api/v1/sections/{id}:
     delete:
+      description: Admin может удалить любой раздел. Moderator может удалить только
+        свой раздел.
       parameters:
       - description: ID раздела
         in: path
@@ -994,6 +1094,8 @@ paths:
     patch:
       consumes:
       - application/json
+      description: Admin может обновить любой раздел. Moderator может обновить только
+        свой раздел.
       parameters:
       - description: ID раздела
         in: path
@@ -1203,7 +1305,8 @@ paths:
       - Тема оформления
   /api/v1/videos/{id}:
     delete:
-      description: Удаляет запись и объект в MinIO; thumbnail-изображение не удаляется
+      description: Admin может удалить любое видео. Moderator может удалить только
+        свое видео. Удаляет запись и объект в MinIO; thumbnail-изображение не удаляется
         автоматически.
       parameters:
       - description: ID видео
@@ -1267,7 +1370,8 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Обновляет поле name; файл в MinIO не перезагружается.
+      description: Admin может переименовать любое видео. Moderator может переименовать
+        только свое видео. Обновляет поле name; файл в MinIO не перезагружается.
       parameters:
       - description: ID видео
         in: path
