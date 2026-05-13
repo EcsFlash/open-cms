@@ -14,11 +14,11 @@ type Video struct {
 	ObjectKey string  `json:"object_key" gorm:"not null"`
 	Duration  float64 `json:"duration_sec"`
 
-	UploaderID uint `json:"uploader_id" gorm:"index;not null"`
-	Uploader   User `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	UploaderID uint `json:"uploader_id" gorm:"index"`
+	Uploader   User `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 
 	ThumbnailImageID *uint  `json:"thumbnail_image_id" gorm:"index"`
 	ThumbnailImage   *Image `json:"thumbnail_image,omitempty" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 
-	Index uint `json:"index" gorm:"column: index_priority; default:0;not null"`
+	Index uint `json:"index" gorm:"column:index_priority;autoIncrement;uniqueIndex;not null;"`
 }

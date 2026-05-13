@@ -36,7 +36,7 @@ func (r *VideoRepo) GetByID(id uint) (*models.Video, error) {
 
 func (r *VideoRepo) ListAll() ([]models.Video, error) {
 	var res []models.Video
-	if err := r.db.Preload("ThumbnailImage").Order("index_priority desc").Find(&res).Error; err != nil {
+	if err := r.db.Preload("ThumbnailImage").Order("index_priority asc").Find(&res).Error; err != nil {
 		return nil, err
 	}
 	return res, nil
